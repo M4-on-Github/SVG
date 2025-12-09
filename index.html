@@ -3,8 +3,13 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Linear Algebra in SVGs: Live Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linear Algebra Transformations in SVGs: Live Demo</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: sans-serif;
             display: flex;
@@ -12,11 +17,20 @@
             align-items: center;
             background-color: #f0f0f0;
             padding: 20px;
+            margin: 0;
+            min-height: 100vh;
         }
 
         h1 {
             color: #333;
             margin-bottom: 10px;
+            text-align: center;
+            font-size: clamp(1.5rem, 5vw, 2rem);
+        }
+
+        p {
+            text-align: center;
+            max-width: 90%;
         }
 
         /* Container for the visual aids */
@@ -25,11 +39,16 @@
             gap: 40px;
             align-items: flex-start;
             margin-top: 20px;
+            width: 100%;
+            max-width: 1200px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         /* The SVG Viewer Styling */
         .canvas {
-            width: 400px;
+            width: 100%;
+            max-width: 400px;
             height: 400px;
             background-color: white;
             border: 2px solid #ccc;
@@ -38,6 +57,12 @@
             background-image: linear-gradient(#eee 1px, transparent 1px), linear-gradient(90deg, #eee 1px, transparent 1px);
             background-size: 20px 20px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+        }
+
+        .canvas svg {
+            width: 100%;
+            height: 100%;
         }
 
         /* The Controls Section */
@@ -46,7 +71,13 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            width: 300px;
+            width: 100%;
+            max-width: 400px;
+            flex-shrink: 0;
+        }
+
+        .controls h3 {
+            margin-top: 0;
         }
 
         .control-group {
@@ -57,12 +88,14 @@
             display: inline-block;
             width: 30px;
             font-weight: bold;
+            font-size: 14px;
         }
 
         input[type="number"] {
             width: 60px;
             padding: 5px;
             margin-right: 10px;
+            font-size: 14px;
         }
 
         /* New styling for rotation slider */
@@ -84,7 +117,7 @@
             grid-template-columns: repeat(3, 1fr);
             gap: 5px;
             font-family: monospace;
-            font-size: 1.2em;
+            font-size: clamp(1rem, 3vw, 1.2em);
             background: #eef;
             padding: 15px;
             border-radius: 8px;
@@ -131,10 +164,17 @@
             border: none;
             border-radius: 4px;
             flex: 1;
+            min-width: 80px;
+            font-size: 14px;
+            touch-action: manipulation;
         }
 
         button:hover {
             background-color: #0056b3;
+        }
+
+        button:active {
+            transform: scale(0.98);
         }
 
         .code-snippet {
@@ -144,7 +184,69 @@
             border-radius: 4px;
             font-family: monospace;
             margin-top: 20px;
-            font-size: 0.9em;
+            font-size: clamp(0.7em, 2vw, 0.9em);
+            word-break: break-all;
+            overflow-wrap: break-word;
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                gap: 20px;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .canvas {
+                max-width: 100%;
+                height: auto;
+                aspect-ratio: 1;
+            }
+
+            .controls {
+                max-width: 100%;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .matrix-display {
+                font-size: 1rem;
+                padding: 10px;
+            }
+
+            .control-group {
+                font-size: 14px;
+            }
+
+            input[type="number"] {
+                width: 50px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .canvas {
+                height: 300px;
+            }
+
+            .controls {
+                padding: 15px;
+            }
+
+            .matrix-display {
+                font-size: 0.9rem;
+                gap: 3px;
+            }
+
+            button {
+                padding: 10px;
+                font-size: 13px;
+            }
         }
     </style>
 </head>
