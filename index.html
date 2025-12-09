@@ -229,6 +229,43 @@
             }
         }
 
+        /* Coordinates Display Styling */
+        .coordinates-display {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            flex-shrink: 0;
+        }
+
+        .coordinates-display h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .coord-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 10px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+
+        .coord-label {
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .coord-value {
+            color: #333;
+            background: #f8f9fa;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+
         @media (max-width: 480px) {
             .canvas {
                 height: 300px;
@@ -246,6 +283,14 @@
             button {
                 padding: 10px;
                 font-size: 13px;
+            }
+
+            .coordinates-display {
+                max-width: 100%;
+            }
+
+            .coord-grid {
+                font-size: 12px;
             }
         }
     </style>
@@ -265,9 +310,28 @@
                 <g id="targetGroup" transform="matrix(1, 0, 0, 1, 0, 0)">
                     <rect x="0" y="0" width="100" height="100" fill="rgba(255, 99, 71, 0.7)" stroke="red"
                         stroke-width="2" />
-                    <text x="5" y="20" font-family="Arial" font-size="12" fill="black">(0,0)</text>
-                    <text x="5" y="90" font-family="Arial" font-size="12" fill="white">SVG OBJECT</text>
-                    <line x1="10" y1="50" x2="90" y2="50" stroke="white" stroke-width="2" marker-end="url(#arrow)" />
+
+                    <!-- Corner coordinate labels -->
+                    <circle cx="0" cy="0" r="3" fill="#0066ff" />
+                    <text id="svg-coord-tl" x="0" y="-8" font-family="Arial" font-size="11" fill="#0066ff"
+                        font-weight="bold" text-anchor="middle">(0, 0)</text>
+
+                    <circle cx="100" cy="0" r="3" fill="#0066ff" />
+                    <text id="svg-coord-tr" x="100" y="-8" font-family="Arial" font-size="11" fill="#0066ff"
+                        font-weight="bold" text-anchor="middle">(100, 0)</text>
+
+                    <circle cx="0" cy="100" r="3" fill="#0066ff" />
+                    <text id="svg-coord-bl" x="0" y="115" font-family="Arial" font-size="11" fill="#0066ff"
+                        font-weight="bold" text-anchor="middle">(0, 100)</text>
+
+                    <circle cx="100" cy="100" r="3" fill="#0066ff" />
+                    <text id="svg-coord-br" x="100" y="115" font-family="Arial" font-size="11" fill="#0066ff"
+                        font-weight="bold" text-anchor="middle">(100, 100)</text>
+
+                    <!-- Original labels -->
+                    <text x="50" y="50" font-family="Arial" font-size="12" fill="white" text-anchor="middle">SVG
+                        OBJECT</text>
+                    <line x1="10" y1="60" x2="90" y2="60" stroke="white" stroke-width="2" marker-end="url(#arrow)" />
                 </g>
 
                 <defs>
@@ -320,17 +384,34 @@
                 &lt;g transform="<span id="code-output">matrix(1, 0, 0, 1, 0, 0)</span>"&gt;
             </div>
         </div>
+
+        <div class="coordinates-display">
+            <h3>Square Corner Coordinates</h3>
+            <div class="coord-grid">
+                <span class="coord-label">Top-Left:</span>
+                <span class="coord-value" id="coord-tl">(0, 0)</span>
+
+                <span class="coord-label">Top-Right:</span>
+                <span class="coord-value" id="coord-tr">(100, 0)</span>
+
+                <span class="coord-label">Bottom-Left:</span>
+                <span class="coord-value" id="coord-bl">(0, 100)</span>
+
+                <span class="coord-label">Bottom-Right:</span>
+                <span class="coord-value" id="coord-br">(100, 100)</span>
+            </div>
+        </div>
     </div>
 
     <script>
         function updateMatrix() {
             // Get values from inputs
-            const a = document.getElementById('in-a').value;
-            const b = document.getElementById('in-b').value;
-            const c = document.getElementById('in-c').value;
-            const d = document.getElementById('in-d').value;
-            const e = document.getElementById('in-e').value;
-            const f = document.getElementById('in-f').value;
+            const a = parseFloat(document.getElementById('in-a').value);
+            const b = parseFloat(document.getElementById('in-b').value);
+            const c = parseFloat(document.getElementById('in-c').value);
+            const d = parseFloat(document.getElementById('in-d').value);
+            const e = parseFloat(document.getElementById('in-e').value);
+            const f = parseFloat(document.getElementById('in-f').value);
 
             // Update the SVG Transform attribute
             const matrixString = `matrix(${a}, ${b}, ${c}, ${d}, ${e}, ${f})`;
@@ -346,6 +427,35 @@
 
             // Update Code Snippet Text
             document.getElementById('code-output').innerText = matrixString;
+
+            // Calculate and update transformed coordinates
+            updateCoordinates(a, b, c, d, e, f);
+        }
+
+        function updateCoordinates(a, b, c, d, e, f) {
+            // Original square corners (x, y, width=100, height=100)
+            const corners = [
+                { x: 0, y: 0, id: 'coord-tl', svgId: 'svg-coord-tl' },      // Top-Left
+                { x: 100, y: 0, id: 'coord-tr', svgId: 'svg-coord-tr' },    // Top-Right
+                { x: 0, y: 100, id: 'coord-bl', svgId: 'svg-coord-bl' },    // Bottom-Left
+                { x: 100, y: 100, id: 'coord-br', svgId: 'svg-coord-br' }   // Bottom-Right
+            ];
+
+            // Apply transformation matrix to each corner
+            // Formula: x' = a*x + c*y + e
+            //          y' = b*x + d*y + f
+            corners.forEach(corner => {
+                const transformedX = a * corner.x + c * corner.y + e;
+                const transformedY = b * corner.x + d * corner.y + f;
+
+                const coordText = `(${transformedX.toFixed(1)}, ${transformedY.toFixed(1)})`;
+
+                // Update the panel display
+                document.getElementById(corner.id).innerText = coordText;
+
+                // Update the SVG text labels
+                document.getElementById(corner.svgId).textContent = coordText;
+            });
         }
 
         function setMatrix(a, b, c, d, e, f) {
