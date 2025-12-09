@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Linear Algebra in SVGs: Live Demo</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        /* Container for the visual aids */
+        .container {
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+            margin-top: 20px;
+        }
+
+        /* The SVG Viewer Styling */
+        .canvas {
+            width: 400px;
+            height: 400px;
+            background-color: white;
+            border: 2px solid #ccc;
+            position: relative;
+            /* Grid pattern to make transformations obvious */
+            background-image: linear-gradient(#eee 1px, transparent 1px), linear-gradient(90deg, #eee 1px, transparent 1px);
+            background-size: 20px 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* The Controls Section */
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: inline-block;
+            width: 30px;
+            font-weight: bold;
+        }
+
+        input[type="number"] {
+            width: 60px;
+            padding: 5px;
+            margin-right: 10px;
+        }
+
+        /* New styling for rotation slider */
+        .rotation-group {
+            background: #eef;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        /* Matrix Visualization Styling */
+        .matrix-display {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            font-family: monospace;
+            font-size: 1.2em;
+            background: #eef;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+            border-left: 3px solid black;
+            border-right: 3px solid black;
+            position: relative;
+        }
+
+        /* Brackets for matrix */
+        .matrix-display::before,
+        .matrix-display::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 10px;
+            border: 3px solid black;
+        }
+
+        .matrix-display::before {
+            left: 0;
+            border-right: none;
+        }
+
+        .matrix-display::after {
+            right: 0;
+            border-left: none;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 8px 12px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            flex: 1;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .code-snippet {
+            background: #222;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Application of Linear Algebra: SVG Transformations</h1>
+    <p>Demonstrating how a <strong>Matrix Transformation</strong> manipulates vector graphics.</p>
+
+    <div class="container">
+        <div class="canvas">
+            <svg width="400" height="400" viewBox="-200 -200 400 400" overflow="visible">
+                <line x1="-200" y1="0" x2="200" y2="0" stroke="#aaa" stroke-width="2" />
+                <line x1="0" y1="-200" x2="0" y2="200" stroke="#aaa" stroke-width="2" />
+
+                <g id="targetGroup" transform="matrix(1, 0, 0, 1, 0, 0)">
+                    <rect x="0" y="0" width="100" height="100" fill="rgba(255, 99, 71, 0.7)" stroke="red"
+                        stroke-width="2" />
+                    <text x="5" y="20" font-family="Arial" font-size="12" fill="black">(0,0)</text>
+                    <text x="5" y="90" font-family="Arial" font-size="12" fill="white">SVG OBJECT</text>
+                    <line x1="10" y1="50" x2="90" y2="50" stroke="white" stroke-width="2" marker-end="url(#arrow)" />
+                </g>
+
+                <defs>
+                    <marker id="arrow" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto"
+                        markerUnits="strokeWidth">
+                        <path d="M0,0 L0,6 L9,3 z" fill="white" />
+                    </marker>
+                </defs>
+            </svg>
+        </div>
+
+        <div class="controls">
+            <h3>Transformation Matrix</h3>
+
+            <div class="matrix-display">
+                <span id="m-a">1</span> <span id="m-c">0</span> <span id="m-e">0</span>
+                <span id="m-b">0</span> <span id="m-d">1</span> <span id="m-f">0</span>
+                <span>0</span> <span>0</span> <span>1</span>
+            </div>
+
+            <div class="control-group rotation-group">
+                <label style="width: auto;">Rotation (Degrees):</label>
+                <div style="display: flex; align-items: center;">
+                    <input type="range" id="rot-slider" min="-360" max="360" value="0" oninput="syncRotation('slider')">
+                    <input type="number" id="rot-number" value="0" min="-360" max="360" oninput="syncRotation('number')"
+                        style="width: 50px; margin-left: 10px;">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>a:</label><input type="number" id="in-a" value="1" step="0.1" oninput="updateMatrix()"> (Scale X
+                / Cos)<br>
+                <label>b:</label><input type="number" id="in-b" value="0" step="0.1" oninput="updateMatrix()"> (Skew Y /
+                Sin)<br>
+                <label>c:</label><input type="number" id="in-c" value="0" step="0.1" oninput="updateMatrix()"> (Skew X /
+                -Sin)<br>
+                <label>d:</label><input type="number" id="in-d" value="1" step="0.1" oninput="updateMatrix()"> (Scale Y
+                / Cos)<br>
+                <label>e:</label><input type="number" id="in-e" value="0" step="10" oninput="updateMatrix()"> (Trans
+                X)<br>
+                <label>f:</label><input type="number" id="in-f" value="0" step="10" oninput="updateMatrix()"> (Trans Y)
+            </div>
+
+            <h3>Presets</h3>
+            <div class="btn-group">
+                <button onclick="resetIdentity()">Identity</button>
+            </div>
+
+            <div class="code-snippet">
+                &lt;g transform="<span id="code-output">matrix(1, 0, 0, 1, 0, 0)</span>"&gt;
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateMatrix() {
+            // Get values from inputs
+            const a = document.getElementById('in-a').value;
+            const b = document.getElementById('in-b').value;
+            const c = document.getElementById('in-c').value;
+            const d = document.getElementById('in-d').value;
+            const e = document.getElementById('in-e').value;
+            const f = document.getElementById('in-f').value;
+
+            // Update the SVG Transform attribute
+            const matrixString = `matrix(${a}, ${b}, ${c}, ${d}, ${e}, ${f})`;
+            document.getElementById('targetGroup').setAttribute('transform', matrixString);
+
+            // Update the Visual Matrix Display
+            document.getElementById('m-a').innerText = a;
+            document.getElementById('m-b').innerText = b;
+            document.getElementById('m-c').innerText = c;
+            document.getElementById('m-d').innerText = d;
+            document.getElementById('m-e').innerText = e;
+            document.getElementById('m-f').innerText = f;
+
+            // Update Code Snippet Text
+            document.getElementById('code-output').innerText = matrixString;
+        }
+
+        function setMatrix(a, b, c, d, e, f) {
+            document.getElementById('in-a').value = a;
+            document.getElementById('in-b').value = b;
+            document.getElementById('in-c').value = c;
+            document.getElementById('in-d').value = d;
+            document.getElementById('in-e').value = e;
+            document.getElementById('in-f').value = f;
+            updateMatrix();
+        }
+
+        // Wrapper for Identity to also reset rotation slider
+        function resetIdentity() {
+            document.getElementById('rot-slider').value = 0;
+            document.getElementById('rot-number').value = 0;
+            setMatrix(1, 0, 0, 1, 0, 0);
+        }
+
+        function syncRotation(source) {
+            let angleDeg;
+            const slider = document.getElementById('rot-slider');
+            const number = document.getElementById('rot-number');
+
+            if (source === 'slider') {
+                angleDeg = slider.value;
+                number.value = angleDeg;
+            } else {
+                angleDeg = number.value;
+                slider.value = angleDeg;
+            }
+
+            applyRotation(angleDeg);
+        }
+
+        function applyRotation(degrees) {
+            // Convert degrees to radians
+            const radians = degrees * (Math.PI / 180);
+
+            // Calculate rotation matrix components
+            // a = cos(θ), b = sin(θ), c = -sin(θ), d = cos(θ)
+            // fix decimal points to avoid floating point ugliness (e.g. 0.00000001)
+            const cos = Math.cos(radians).toFixed(3);
+            const sin = Math.sin(radians).toFixed(3);
+
+            // Update inputs
+            // Note: We preserve e and f (translation) so rotation happens in place
+            document.getElementById('in-a').value = cos;
+            document.getElementById('in-b').value = sin;
+            document.getElementById('in-c').value = -sin; // c is -sin
+            document.getElementById('in-d').value = cos;
+
+            updateMatrix();
+        }
+    </script>
+</body>
+
+</html>
