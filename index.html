@@ -381,22 +381,42 @@
             applyRotation(angleDeg);
         }
 
+        // Global variable to store the previous slider value
+        let previousDegrees = 0;
+
         function applyRotation(degrees) {
-            // Convert degrees to radians
-            const radians = degrees * (Math.PI / 180);
+            // 1. Calculate the CHANGE in rotation, not the absolute rotation
+            const deltaDegrees = degrees - previousDegrees;
 
-            // Calculate rotation matrix components
-            // a = cos(θ), b = sin(θ), c = -sin(θ), d = cos(θ)
-            // fix decimal points to avoid floating point ugliness (e.g. 0.00000001)
-            const cos = Math.cos(radians).toFixed(3);
-            const sin = Math.sin(radians).toFixed(3);
+            // 2. Update the tracker for the next event
+            previousDegrees = degrees;
 
-            // Update inputs
-            // Note: We preserve e and f (translation) so rotation happens in place
-            document.getElementById('in-a').value = cos;
-            document.getElementById('in-b').value = sin;
-            document.getElementById('in-c').value = -sin; // c is -sin
-            document.getElementById('in-d').value = cos;
+            // 3. Use the DELTA for the math
+            const radians = deltaDegrees * (Math.PI / 180);
+            const cos = Math.cos(radians);
+            const sin = Math.sin(radians);
+
+            // Get current matrix values
+            // Note: Parsing from DOM every frame causes precision loss over time, 
+            // but works for simple demos.
+            const current_a = parseFloat(document.getElementById('in-a').value);
+            const current_b = parseFloat(document.getElementById('in-b').value);
+            const current_c = parseFloat(document.getElementById('in-c').value);
+            const current_d = parseFloat(document.getElementById('in-d').value);
+
+            // Perform the matrix multiplication
+            // (a  c) * (cos  -sin)
+            // (b  d)   (sin   cos)
+            const new_a = (current_a * cos + current_c * sin);
+            const new_b = (current_b * cos + current_d * sin);
+            const new_c = (current_a * -sin + current_c * cos);
+            const new_d = (current_b * -sin + current_d * cos);
+
+            // Update inputs (Apply rounding only at the display step)
+            document.getElementById('in-a').value = new_a.toFixed(3);
+            document.getElementById('in-b').value = new_b.toFixed(3);
+            document.getElementById('in-c').value = new_c.toFixed(3);
+            document.getElementById('in-d').value = new_d.toFixed(3);
 
             updateMatrix();
         }
